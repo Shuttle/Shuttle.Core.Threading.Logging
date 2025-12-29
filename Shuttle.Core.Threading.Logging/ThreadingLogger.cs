@@ -15,13 +15,28 @@ public class ThreadingLogger : IHostedService
         _logger = Guard.AgainstNull(logger);
         _threadingOptions = Guard.AgainstNull(Guard.AgainstNull(threadingOptions).Value);
 
-        _threadingOptions.ProcessorException += OnProcessorException;
-        _threadingOptions.ProcessorExecuting += OnProcessorExecuting;
-        _threadingOptions.ProcessorThreadActive += OnProcessorThreadActive;
-        _threadingOptions.ProcessorThreadStarting += OnProcessorThreadStarting;
-        _threadingOptions.ProcessorThreadStopped += OnProcessorThreadStopped;
-        _threadingOptions.ProcessorThreadStopping += OnProcessorThreadStopping;
-        _threadingOptions.ProcessorThreadOperationCanceled += OnProcessorThreadOperationCanceled;
+        _threadingOptions.ProcessorException += ProcessorException;
+        _threadingOptions.ProcessorExecuting += ProcessorExecuting;
+        _threadingOptions.ProcessorExecuted += ProcessorExecuted ;
+        _threadingOptions.ProcessorThreadActive += ProcessorThreadActive;
+        _threadingOptions.ProcessorThreadStarting += ProcessorThreadStarting;
+        _threadingOptions.ProcessorThreadStopped += ProcessorThreadStopped;
+        _threadingOptions.ProcessorThreadStopping += ProcessorThreadStopping;
+        _threadingOptions.ProcessorThreadOperationCanceled += ProcessorThreadOperationCanceled;
+    }
+
+    private Task ProcessorExecuting(ProcessorEventArgs eventArgs, CancellationToken cancellationToken)
+    {
+        _logger.LogTrace(@"[ProcessorExecuting] : service key = '{EventArgsServiceKey}' / processor = {ProcessorFullName} / managed thread id = {ManagedThreadId}", eventArgs.ServiceKey, GetProcessorFullName(eventArgs.Processor), eventArgs.ManagedThreadId);
+
+        return Task.CompletedTask;
+    }
+
+    private Task ProcessorExecuted(ProcessorEventArgs eventArgs, CancellationToken cancellationToken)
+    {
+        _logger.LogTrace(@"[ProcessorExecuted] : service key = '{EventArgsServiceKey}' / processor = {ProcessorFullName} / managed thread id = {ManagedThreadId}", eventArgs.ServiceKey, GetProcessorFullName(eventArgs.Processor), eventArgs.ManagedThreadId);
+
+        return Task.CompletedTask;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -31,67 +46,61 @@ public class ThreadingLogger : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _threadingOptions.ProcessorException -= OnProcessorException;
-        _threadingOptions.ProcessorExecuting -= OnProcessorExecuting;
-        _threadingOptions.ProcessorThreadActive -= OnProcessorThreadActive;
-        _threadingOptions.ProcessorThreadStarting -= OnProcessorThreadStarting;
-        _threadingOptions.ProcessorThreadStopped -= OnProcessorThreadStopped;
-        _threadingOptions.ProcessorThreadStopping -= OnProcessorThreadStopping;
-        _threadingOptions.ProcessorThreadOperationCanceled -= OnProcessorThreadOperationCanceled;
+        _threadingOptions.ProcessorException -= ProcessorException;
+        _threadingOptions.ProcessorExecuting -= ProcessorExecuting;
+        _threadingOptions.ProcessorExecuted -= ProcessorExecuted;
+        _threadingOptions.ProcessorThreadActive -= ProcessorThreadActive;
+        _threadingOptions.ProcessorThreadStarting -= ProcessorThreadStarting;
+        _threadingOptions.ProcessorThreadStopped -= ProcessorThreadStopped;
+        _threadingOptions.ProcessorThreadStopping -= ProcessorThreadStopping;
+        _threadingOptions.ProcessorThreadOperationCanceled -= ProcessorThreadOperationCanceled;
 
         return Task.CompletedTask;
     }
 
-    private static string GetProcessorFullName(ProcessorThread processorThread)
+    private static string GetProcessorFullName(IProcessor processor)
     {
-        return processorThread.GetType().FullName ?? processorThread.GetType().Name;
+        return processor.GetType().FullName ?? processor.GetType().Name;
     }
 
-    private Task OnProcessorException(ProcessorThreadExceptionEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorException(ProcessorThreadExceptionEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorException] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId} / exception = '{eventArgs.Exception}'");
+        _logger.LogTrace("[ProcessorException] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId} / exception = '{Exception}'", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId, eventArgs.Exception);
 
         return Task.CompletedTask;
     }
 
-    private Task OnProcessorExecuting(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorThreadActive(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorExecuting] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
+        _logger.LogTrace("[ProcessorThreadActive] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId}", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
 
-    private Task OnProcessorThreadActive(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorThreadOperationCanceled(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorThreadActive] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
+        _logger.LogTrace("[ProcessorThreadOperationCanceled] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId}", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
 
-    private Task OnProcessorThreadOperationCanceled(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorThreadStarting(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorThreadOperationCanceled] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
+        _logger.LogTrace("[ProcessorThreadStarting] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId}", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
 
-    private Task OnProcessorThreadStarting(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorThreadStopped(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorThreadStarting] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
+        _logger.LogTrace("[ProcessorThreadStopped] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId}", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
 
-    private Task OnProcessorThreadStopped(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorThreadStopping(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
     {
-        _logger.LogTrace($@"[ProcessorThreadStopped] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
-
-        return Task.CompletedTask;
-    }
-
-    private Task OnProcessorThreadStopping(ProcessorThreadEventArgs eventArgs, CancellationToken cancellationToken)
-    {
-        _logger.LogTrace($@"[ProcessorThreadStopping] : name = '{eventArgs.ProcessorThread.Name}' / processor = {GetProcessorFullName(eventArgs.ProcessorThread)} / managed thread id = {eventArgs.ManagedThreadId}");
+        _logger.LogTrace("[ProcessorThreadStopping] : service key = '{ServiceKey}' / managed thread id = {ManagedThreadId}", eventArgs.ProcessorThread.ServiceKey, eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
