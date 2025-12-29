@@ -25,14 +25,14 @@ public class ThreadingLogger : IHostedService
         _threadingOptions.ProcessorThreadOperationCanceled += ProcessorThreadOperationCanceled;
     }
 
-    private Task ProcessorExecuting(ProcessorEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorExecuting(ProcessorExecutingEventArgs eventArgs, CancellationToken cancellationToken)
     {
         _logger.LogTrace(@"[ProcessorExecuting] : service key = '{EventArgsServiceKey}' / processor = {ProcessorFullName} / managed thread id = {ManagedThreadId}", eventArgs.ServiceKey, GetProcessorFullName(eventArgs.Processor), eventArgs.ManagedThreadId);
 
         return Task.CompletedTask;
     }
 
-    private Task ProcessorExecuted(ProcessorEventArgs eventArgs, CancellationToken cancellationToken)
+    private Task ProcessorExecuted(ProcessorExecutedEventArgs eventArgs, CancellationToken cancellationToken)
     {
         _logger.LogTrace(@"[ProcessorExecuted] : service key = '{EventArgsServiceKey}' / processor = {ProcessorFullName} / managed thread id = {ManagedThreadId}", eventArgs.ServiceKey, GetProcessorFullName(eventArgs.Processor), eventArgs.ManagedThreadId);
 
