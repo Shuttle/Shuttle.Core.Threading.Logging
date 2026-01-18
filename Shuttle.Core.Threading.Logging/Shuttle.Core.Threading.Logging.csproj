@@ -17,13 +17,13 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
-    <PackageReference Include="Shuttle.Core.Contract" Version="21.0.0" />
-    <PackageReference Include="Shuttle.Core.Threading" Version="21.0.0" />
+    <PackageReference Include="Shuttle.Core.Contract" Version="21.0.0-alpha" />
+    <PackageReference Include="Shuttle.Core.Threading" Version="21.0.0-alpha" />
   </ItemGroup>
 
   <PropertyGroup>
     <Description>Provides non-intrusive logging for Shuttle.Core.Threading components.</Description>
-    <Version>21.0.0</Version>
+    <Version>21.0.0-alpha</Version>
     <PackageProjectUrl>https://github.com/Shuttle/Shuttle.Core.Threading.Logging</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Shuttle/Shuttle.Core.Threading.Logging.git</RepositoryUrl>
     <PackageTags></PackageTags>
